@@ -1,0 +1,33 @@
+@startuml build_deck_flow
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Dynamic.puml
+
+title Dynamic Diagram — Building a Deck (`pandoro build ...` / MCP `create_*_deck`)
+
+Person(user, "CLI / Agent User")
+Container(cli, "CLI / MCP Server")
+Container(kb, "Case Library Reader")
+Container(themeMod, "Theme Resolver")
+Container(builder, "Deck Builder")
+Container(planner, "Art Director")
+Container(glaze, "Glaze Pipeline")
+Container(renderers, "Diagram / Chart Renderers")
+ContainerDb(output, ".pptx Deck")
+
+Rel(user, cli, "Requests a deck (case slugs / filters / theme / brand-description)")
+Rel(cli, kb, "load_catalog + filter_cases")
+Rel(cli, themeMod, "load_theme(theme_path, brand_description)")
+Rel(cli, builder, "build_*_deck(cases, library, theme, ...)")
+Rel(builder, planner, "Plans a slide structure from each case's sections")
+Rel(builder, glaze, "glaze(sections, theme) — layout + imagery, poured and placed")
+Rel(builder, renderers, "Renders any diagram/chart slides natively")
+Rel(builder, output, "Writes the .pptx")
+Rel(cli, user, "Returns the deck path")
+
+note right of glaze
+  Runs end-to-end with zero API keys: Recipe falls
+  back to layout heuristics, image slots become
+  placeholders to fill — never blocks the build.
+end note
+
+@enduml

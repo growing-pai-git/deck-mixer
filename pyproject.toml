@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pandoro"
+version = "0.1.0"
+description = "Turn a case-study library into branded, editable PPTX decks."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "python-pptx>=0.6.23",
+    "PyYAML>=6.0",
+    "Pillow>=9.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.0"]
+anthropic = ["anthropic>=0.34"]
+dev = ["pytest>=7.0", "mcp>=1.0"]
+
+[project.scripts]
+pandoro = "pandoro.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pandoro*", "deck_mixer*"]
+exclude = ["deck_mixer.tests*"]
+
+[tool.setuptools.package-data]
+"deck_mixer" = ["skill_template/*", "examples/**/*"]

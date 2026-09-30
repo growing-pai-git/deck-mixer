@@ -1,0 +1,7 @@
+' Single place to pin the C4-PlantUML stdlib version used by every diagram in this folder.
+' Bump C4Puml here to upgrade all diagrams at once.
+!define C4Puml https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.14.0
+
+' Use PlantUML's pure-Java layout engine instead of shelling out to Graphviz's `dot`.
+' Keeps rendering dependency-free — no local Graphviz install/PATH config required.
+!pragma layout smetana

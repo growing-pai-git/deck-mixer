@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-08T12:45:30.043903+00:00",
+  "total_cases": 3,
+  "cases": [
+    {
+      "case_id": "sample-2026-bluecrate-route-optimization",
+      "slug": "bluecrate-route-optimization",
+      "file_path": "cases/bluecrate-route-optimization/case.md",
+      "title": "BlueCrate delivery route optimization POC",
+      "client": "BlueCrate Logistics",
+      "sector": "Last-mile logistics",
+      "client_type": "sme",
+      "period": "2026 Q1",
+      "status": "poc",
+      "confidentiality": "confidential",
+      "budget_order": "25k EUR",
+      "effort_order": "~20 person-days",
+      "contact_person": "ops@example.com",
+      "last_updated": "2026-04-10",
+      "technologies": [
+        "route optimization solver",
+        "LLM triage",
+        "dispatch API"
+      ],
+      "capabilities": [
+        "route optimization",
+        "dispatch automation"
+      ],
+      "tender_tags": [
+        "proof of concept",
+        "logistics",
+        "scalability"
+      ],
+      "reusable_for": [
+        "last-mile delivery",
+        "fleet dispatch",
+        "route planning"
+      ],
+      "sections": [
+        "1. Summary",
+        "2. Client context",
+        "3. Problem or challenge",
+        "4. Objective",
+        "5. Approach",
+        "6. Solution",
+        "7. Technology and architecture",
+        "8. Our role",
+        "9. Human in the loop, governance and quality",
+        "10. Results and impact",
+        "11. Implementation and follow-up",
+        "12. Tender relevance",
+        "13. Evidence and details"
+      ],
+      "summary": "BlueCrate Logistics wanted to know whether AI-assisted route planning could\nmeaningfully cut delivery times before committing budget to a full build.\nWe ran a two-week proof of concept against twelve real routes and found an\nestimated 18% reduction in drive time."
+    },
+    {
+      "case_id": "sample-2026-northwind-retail-support",
+      "slug": "northwind-retail-support",
+      "file_path": "cases/northwind-retail-support/case.md",
+      "title": "Northwind Retail AI support assistant",
+      "client": "Northwind Retail",
+      "sector": "E-commerce retail",
+      "client_type": "enterprise",
+      "period": "2025 to present",
+      "status": "production ongoing",
+      "confidentiality": "public",
+      "budget_order": "60k EUR",
+      "effort_order": "~50 person-days",
+      "contact_person": "support-lead@example.com",
+      "last_updated": "2026-06-01",
+      "technologies": [
+        "RAG",
+        "vector search",
+        "LLM chat",
+        "order API integration",
+        "human-in-the-loop review"
+      ],
+      "capabilities": [
+        "customer support automation",
+        "order lookup",
+        "RAG",
+        "multilingual processing"
+      ],
+      "tender_tags": [
+        "co-creation",
+        "production AI",
+        "customer support",
+        "scalability"
+      ],
+      "reusable_for": [
+        "support desk automation",
+        "order status bots",
+        "help-center RAG"
+      ],
+      "sections": [
+        "1. Summary",
+        "2. Client context",
+        "3. Problem or challenge",
+        "4. Objective",
+        "5. Approach",
+        "6. Solution",
+        "7. Technology & architecture",
+        "8. Our role",
+        "9. Human in the loop, governance and quality",
+        "10. Results and impact",
+        "11. Implementation and follow-up",
+        "12. Tender relevance",
+        "13. Evidence and details"
+      ],
+      "summary": "Northwind Retail's support team was overwhelmed by repetitive order-status\nand return questions. We built an AI assistant that reads the order\nmanagement system directly, answers common questions instantly, and hands\noff to a human the moment a question needs judgment. It now resolves two\nthirds of incoming tickets without any human involvement."
+    },
+    {
+      "case_id": "sample-2026-port-authority-document-intake",
+      "slug": "port-authority-document-intake",
+      "file_path": "cases/port-authority-document-intake/case.md",
+      "title": "Harbor Authority document intake automation",
+      "client": "Regional Harbor Authority",
+      "sector": "Public sector logistics",
+      "client_type": "public",
+      "period": "2025",
+      "status": "pilot",
+      "confidentiality": "anonymized",
+      "budget_order": "unknown",
+      "effort_order": "~40 person-days",
+      "contact_person": "ops@example.gov",
+      "last_updated": "2026-05-20",
+      "technologies": [
+        "document extraction",
+        "OCR",
+        "LLM classification",
+        "validation UI"
+      ],
+      "capabilities": [
+        "document extraction",
+        "email classification",
+        "human in the loop",
+        "masterdata matching"
+      ],
+      "tender_tags": [
+        "governance",
+        "human in the loop",
+        "public sector",
+        "data intensive"
+      ],
+      "reusable_for": [
+        "customs document processing",
+        "permit intake",
+        "regulated document workflows"
+      ],
+      "sections": [
+        "1. Summary",
+        "2. Client context",
+        "3. Problem or challenge",
+        "4. Objective",
+        "5. Approach",
+        "6. Solution",
+        "7. Technology and architecture",
+        "8. Our role",
+        "9. Human in the loop, governance and quality",
+        "10. Results and impact",
+        "11. Implementation and follow-up",
+        "12. Tender relevance",
+        "13. Evidence and details"
+      ],
+      "summary": "A regional harbor authority receives shipping manifests and customs\npaperwork in inconsistent formats from hundreds of vessels each month. We\nbuilt a document-intake pipeline that extracts structured data from scans\nand PDFs, classifies each document, and routes uncertain cases to a human\nreviewer before anything reaches the case-management system."
+    }
+  ]
+}

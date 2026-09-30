@@ -1,0 +1,4 @@
+# Rendered PlantUML output — regenerate from source, don't commit
+*.png
+*.svg
+*.pdf

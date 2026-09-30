@@ -1,0 +1,39 @@
+@startuml llm_gateway
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Component.puml
+
+title Component Diagram — LLM Gateway
+
+Container_Boundary(llmGateway, "LLM Gateway") {
+    Component(registry, "Provider Registry", "_PROVIDERS dict (llm.py)", "One function per provider, gated on its own API key; call_json() picks the first configured provider")
+    Component(anthropicFn, "anthropic()", "llm.py", "Anthropic Messages API")
+    Component(openaiFn, "openai()", "llm.py", "OpenAI Chat Completions API")
+    Component(geminiFn, "gemini()", "llm.py", "Gemini generateContent API")
+
+    registry --> anthropicFn
+    registry --> openaiFn
+    registry --> geminiFn
+}
+
+Container_Ext(planner, "Art Director")
+Container_Ext(glaze, "Glaze Pipeline")
+Container_Ext(themeMod, "Theme Resolver")
+Container_Ext(config, "Config")
+System_Ext(llm, "LLM Provider")
+
+Rel(planner, registry, "call_json(prompt) — slide structure")
+Rel(glaze, registry, "call_json(prompt) — visual judgement, style tuning")
+Rel(themeMod, registry, "call_json(prompt) — palette inference from --brand-description")
+Rel(registry, config, "Reads configured API key per provider")
+Rel(anthropicFn, llm, "API call", "HTTPS")
+Rel(openaiFn, llm, "API call", "HTTPS")
+Rel(geminiFn, llm, "API call", "HTTPS")
+
+note right of registry
+  No provider configured -> call_json() returns None.
+  Every caller has a non-AI fallback (layout heuristics,
+  fixed palette, etc.) — this is a first-class path, not
+  an error case.
+end note
+
+@enduml

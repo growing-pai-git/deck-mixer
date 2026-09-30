@@ -1,0 +1,21 @@
+@startuml component_template
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Component.puml
+
+title Component Diagram — <Module Name>
+
+Container_Boundary(moduleId, "<Module Name>") {
+    Component(step1, "<Step 1>", "<file.py>", "<what it does>")
+    Component(step2, "<Step 2>", "<file.py>", "<what it does>")
+
+    step1 --> step2
+}
+
+Container_Ext(builder, "Deck Builder")
+Container_Ext(llmGateway, "LLM Gateway")
+
+Rel(builder, step1, "Triggers module")
+Rel(step1, llmGateway, "<call> (optional)")
+Rel(step2, builder, "Returns <output>")
+
+@enduml

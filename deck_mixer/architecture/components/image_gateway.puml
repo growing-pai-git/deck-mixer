@@ -1,0 +1,35 @@
+@startuml image_gateway
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Component.puml
+
+title Component Diagram — Image Gateway
+
+Container_Boundary(imageGateway, "Image Gateway") {
+    Component(genRegistry, "Generation Registry", "_PROVIDERS dict (imagegen.py)", "One function per AI image-gen provider, gated on its own API key")
+    Component(openaiImg, "openai_image()", "imagegen.py", "gpt-image-1")
+    Component(stabilityImg, "stability()", "imagegen.py", "Stability AI core")
+    Component(stockChain, "Stock Photo Chain", "images.py — fetch_image()", "Pexels -> Unsplash, each gated on its API key")
+
+    genRegistry --> openaiImg
+    genRegistry --> stabilityImg
+}
+
+Container_Ext(pour, "Pour (Glaze Pipeline)")
+Container_Ext(config, "Config")
+System_Ext(imageProvider, "Image Provider")
+
+Rel(pour, genRegistry, "generate(brief, style) for medium=generate")
+Rel(pour, stockChain, "fetch_image(hint, style) for medium=photo")
+Rel(pour, pour, "Cross-fallback: generate <-> photo if one path fails")
+Rel(genRegistry, config, "Reads configured API key per provider")
+Rel(openaiImg, imageProvider, "API call", "HTTPS")
+Rel(stabilityImg, imageProvider, "API call", "HTTPS")
+Rel(stockChain, imageProvider, "API call", "HTTPS")
+
+note right of stockChain
+  With no key configured nothing is fetched:
+  the builder renders image placeholders
+  for the user to fill.
+end note
+
+@enduml

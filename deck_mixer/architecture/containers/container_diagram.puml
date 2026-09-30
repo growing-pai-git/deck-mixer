@@ -1,0 +1,63 @@
+@startuml pandoro_containers
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+title Container Diagram — Pandoro
+
+Person(user, "CLI / Agent User")
+System_Ext(mcpClient, "MCP Client")
+
+System_Boundary(engine, "Pandoro Engine") {
+    Container(cli, "CLI", "argparse (cli.py)", "pandoro build / list / library / theme / mcp / configure / skill")
+    Container(mcpServer, "MCP Server", "FastMCP (server.py)", "Exposes the same operations as MCP tools over stdio")
+    Container(config, "Config", "config.py", "Resolves API keys + paths: env var -> ~/.config/pandoro/keys.json -> default")
+
+    Container(kb, "Case Library Reader", "kb.py", "Loads catalog.json + case.md, filters/queries cases")
+    Container(themeMod, "Theme Resolver", "theme.py", "Loads theme.yaml, infers from --brand-description (LLM), or falls back to DEFAULT_THEME")
+    Container(planner, "Art Director", "planner.py", "AI-assisted slide-structure planning from case sections")
+    Container(glaze, "Glaze Pipeline", "glaze/ package", "Plan -> Fetch -> Place: layout + visual demand, image fill, placement")
+    Container(builder, "Deck Builder", "builder.py", "Assembles the python-pptx Presentation from SlidePlans + Theme")
+    Container(renderers, "Diagram / Chart Renderers", "diagrams.py, charts.py", "Native python-pptx diagrams and charts — no rasterized images")
+
+    Container(llmGateway, "LLM Gateway", "llm.py", "Provider-registry text/JSON calls")
+    Container(imageGateway, "Image Gateway", "imagegen.py, images.py", "Provider-registry AI image generation + stock-photo fallback chain")
+}
+
+System_Ext(library, "Case Library")
+System_Ext(theme, "Brand Theme")
+System_Ext(llm, "LLM Provider")
+System_Ext(imageProvider, "Image Provider")
+ContainerDb(output, ".pptx Deck", "File", "The generated, fully editable deck")
+
+Rel(user, cli, "Invokes", "CLI")
+Rel(mcpClient, mcpServer, "Invokes", "MCP, stdio")
+
+Rel(cli, config, "Resolves keys/paths")
+Rel(mcpServer, config, "Resolves keys/paths")
+
+Rel(cli, kb, "load_catalog / filter_cases")
+Rel(mcpServer, kb, "load_catalog / filter_cases")
+Rel(cli, themeMod, "load_theme")
+Rel(mcpServer, themeMod, "load_theme")
+Rel(kb, library, "Reads", "filesystem")
+Rel(themeMod, theme, "Reads", "filesystem")
+
+Rel(cli, builder, "build_reference_deck / build_capabilities_deck / build_tender_deck / build_plan_deck")
+Rel(mcpServer, builder, "build_reference_deck / build_capabilities_deck / build_tender_deck / build_plan_deck")
+
+Rel(builder, planner, "Requests a slide structure per case/section")
+Rel(builder, glaze, "Enriches slide plans with layout + imagery")
+Rel(builder, renderers, "Renders diagram/chart slides")
+Rel(builder, output, "Writes")
+
+Rel(planner, llmGateway, "Art-director planning call (optional)")
+Rel(glaze, llmGateway, "Visual-demand judgement, style tuning (optional)")
+Rel(glaze, imageGateway, "Fills each visual placeholder")
+Rel(themeMod, llmGateway, "Infers a palette from --brand-description (optional)")
+
+Rel(llmGateway, llm, "API call", "HTTPS")
+Rel(imageGateway, imageProvider, "API call", "HTTPS")
+
+SHOW_LEGEND()
+@enduml

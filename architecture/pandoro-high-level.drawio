@@ -1,0 +1,142 @@
+<mxfile host="app.diagrams.net" modified="2026-09-08T00:00:00.000Z" agent="pandoro" version="24.0.0" type="device">
+  <diagram id="pandoro-high-level" name="Pandoro - High-Level Architecture">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Pandoro &#8212; High-Level Architecture" style="text;html=1;fontSize=20;fontStyle=1;fontColor=#1E293B;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="solid = always used &#8226; dashed = optional (engine still works without it)" style="text;html=1;fontSize=11;fontStyle=2;fontColor=#5C6674;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="600" width="480" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Left actors -->
+        <mxCell id="user" value="CLI / Agent User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=none;strokeColor=#1E293B;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="60" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mcpClient" value="MCP Client&#10;(Claude Desktop / Code, ...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F6F5;strokeColor=#5C6674;dashed=1;fontColor=#1E293B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Engine boundary -->
+        <mxCell id="boundary" value="Pandoro Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECF1F0;strokeColor=#1E293B;dashed=1;verticalAlign=top;fontStyle=1;fontSize=16;fontColor=#1E293B;align=center;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="240" y="90" width="640" height="420" as="geometry" />
+        </mxCell>
+
+        <mxCell id="interfaces" value="Interfaces&#10;CLI (cli.py) + MCP Server (server.py)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F7F5;strokeColor=#14B8A6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="140" width="270" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="loaders" value="Library &amp; Theme Loaders&#10;kb.py + theme.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F7F5;strokeColor=#14B8A6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="140" width="280" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="planning" value="AI Planning &amp; Beautify&#10;planner.py + glaze/ (Plan &#8594; Fetch &#8594; Place)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F7F5;strokeColor=#14B8A6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="250" width="270" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="deckbuilder" value="Deck Builder&#10;builder.py + diagrams.py / charts.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F7F5;strokeColor=#14B8A6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="250" width="280" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="llmgw" value="LLM Gateway&#10;llm.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F7F5;strokeColor=#14B8A6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="360" width="270" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="imggw" value="Image Gateway&#10;imagegen.py + images.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F7F5;strokeColor=#14B8A6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="360" width="280" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Right externals -->
+        <mxCell id="caselib" value="Case Library&#10;(user-owned Markdown + catalog.json)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F6F5;strokeColor=#5C6674;fontColor=#1E293B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="140" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="brandtheme" value="Brand Theme&#10;(theme.yaml + assets, or a description)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4F6F5;strokeColor=#5C6674;fontColor=#1E293B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="220" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="llmprovider" value="LLM Provider&#10;Anthropic / OpenAI / Gemini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECD1;strokeColor=#F59E0B;fontColor=#1E293B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="360" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="imgprovider" value="Image Provider&#10;OpenAI/Stability generate, Pexels/Unsplash stock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECD1;strokeColor=#F59E0B;fontColor=#1E293B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="440" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Output -->
+        <mxCell id="output" value=".pptx Deck&#10;(editable output)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1E293B;strokeWidth=2;fontColor=#1E293B;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="540" width="280" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="user" target="interfaces">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e1label" value="CLI" style="text;html=1;fontSize=11;fontColor=#1E293B;align=center;" vertex="1" connectable="0" parent="e1">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="user" target="mcpClient">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e2label" value="or talks to" style="text;html=1;fontSize=11;fontColor=#1E293B;align=center;" vertex="1" connectable="0" parent="e2">
+          <mxGeometry x="0" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e3" value="MCP (stdio)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="mcpClient" target="interfaces">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e4" value="resolves" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="interfaces" target="loaders">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e5" value="reads" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="loaders" target="caselib">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e6" value="reads" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="loaders" target="brandtheme">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e7" value="build_*_deck()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="interfaces" target="deckbuilder">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e8" value="plans &amp; enriches slides" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="deckbuilder" target="planning">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e9" value="writes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1E293B;fontColor=#1E293B;fontSize=11;" edge="1" parent="1" source="deckbuilder" target="output">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e10" value="optional" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#F59E0B;dashed=1;fontColor=#B06C02;fontSize=11;" edge="1" parent="1" source="planning" target="llmgw">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e11" value="optional" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#F59E0B;dashed=1;fontColor=#B06C02;fontSize=11;" edge="1" parent="1" source="planning" target="imggw">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e12" value="infer theme (optional)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#F59E0B;dashed=1;fontColor=#B06C02;fontSize=11;" edge="1" parent="1" source="loaders" target="llmgw">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#F59E0B;dashed=1;fontColor=#B06C02;fontSize=11;" edge="1" parent="1" source="llmgw" target="llmprovider">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#F59E0B;dashed=1;fontColor=#B06C02;fontSize=11;" edge="1" parent="1" source="imggw" target="imgprovider">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="sourcePoint" /></mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

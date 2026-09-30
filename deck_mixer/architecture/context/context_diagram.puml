@@ -1,0 +1,35 @@
+@startuml pandoro_context
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+title System Context — Pandoro
+
+Person(user, "CLI / Agent User", "Someone building a deck — directly via the CLI, or conversationally through an MCP client")
+
+System_Boundary(pandoroBoundary, "Pandoro") {
+    System(engine, "Pandoro Engine", "Turns a case library + theme into a branded, editable PPTX deck")
+}
+
+System_Ext(library, "Case Library", "User-owned folder of Markdown cases + catalog.json — see CASE_LIBRARY_SCHEMA.md")
+System_Ext(theme, "Brand Theme", "User-owned theme.yaml + logo/assets, or a free-text brand description")
+System_Ext(llm, "LLM Provider", "Anthropic / OpenAI / Gemini — optional, powers AI slide planning and theme inference")
+System_Ext(imageProvider, "Image Provider", "OpenAI / Stability / Gemini generation, Pexels / Unsplash stock — optional")
+System_Ext(mcpClient, "MCP Client", "Claude Desktop / Code or any other MCP client")
+
+Rel(user, engine, "Runs `pandoro build / list / configure`", "CLI")
+Rel(mcpClient, engine, "Calls list_cases / create_*_deck / configure_keys", "MCP, stdio")
+Rel(engine, library, "Reads cases + catalog", "filesystem")
+Rel(engine, theme, "Reads theme, or falls back to a neutral default", "filesystem")
+Rel(engine, llm, "Plans slide layout, writes visual briefs, infers theme (optional)", "API")
+Rel(engine, imageProvider, "Generates or fetches slide imagery (optional)", "API")
+Rel(engine, user, "Writes a .pptx deck to disk")
+
+note right of engine
+  Zero API keys is a first-class path: no LLM/image
+  key configured still produces a valid deck via
+  layout heuristics and free stock-photo fallbacks.
+end note
+
+SHOW_LEGEND()
+@enduml

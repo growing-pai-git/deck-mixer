@@ -1,0 +1,36 @@
+@startuml glaze_pipeline
+!include ../_shared/c4_version.puml
+!includeurl C4Puml/C4_Component.puml
+
+title Component Diagram — Glaze Pipeline
+
+Container_Boundary(glaze, "Glaze Pipeline") {
+    Component(recipe, "Recipe", "recipe.py", "Chooses each slide's layout and drafts its visual demand (kind, hint, brief), varied for rhythm")
+    Component(proof, "Proof", "proof.py", "Evaluates demands: drops unfillable visuals, lets Claude judge which help (optional), applies the photo-density cap")
+    Component(pour, "Pour", "pour.py", "Fills each approved placeholder in parallel — generate <-> photo cross-fallback so a slide is never left empty")
+    Component(place, "Place", "place.py", "Sets each slide's image region (background / right / full / none); collapses the layout if nothing came back")
+    Component(style, "Style", "style.py", "Computes one DeckStyle per deck — palette from Theme, mood tuned by Claude (optional) — threaded through every step")
+
+    recipe --> proof
+    proof --> pour
+    pour --> place
+    style ..> recipe
+    style ..> pour
+}
+
+Container_Ext(builder, "Deck Builder")
+Container_Ext(llmGateway, "LLM Gateway")
+Container_Ext(imageGateway, "Image Gateway")
+
+Rel(builder, recipe, "Sends storyline sections + Theme")
+Rel(place, builder, "Returns placed SlidePlans")
+
+Rel(proof, llmGateway, "Judges visual demand, picks medium (optional)")
+Rel(pour, imageGateway, "generate() / fetch_image()")
+
+note right of pour
+  Placeholder status lifecycle:
+  proposed -> approved | rejected -> filled | failed
+end note
+
+@enduml
