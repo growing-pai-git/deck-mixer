@@ -88,3 +88,16 @@ def test_outfile_rejects_paths(server, name):
 @pytest.mark.parametrize("name", ["Acme tender 2026", "deck_v2.final", "Überblick"])
 def test_outfile_accepts_plain_names(server, name):
     assert server._outfile("plan", name) == server.OUTPUT_DIR / f"{name}.pptx"
+
+
+def test_bundle_skips_onboarding_and_points_to_its_settings(server, monkeypatch):
+    monkeypatch.setattr(server, "is_first_run", lambda: True)
+    for var in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.delenv("DECK_MIXER_BUNDLE", raising=False)
+    assert server._first_run_guard()
+    assert "configure_keys" in server._missing_key_warning()
+
+    monkeypatch.setenv("DECK_MIXER_BUNDLE", "1")
+    assert server._first_run_guard() is None
+    assert "Settings → Extensions → Deck Mixer" in server._missing_key_warning()

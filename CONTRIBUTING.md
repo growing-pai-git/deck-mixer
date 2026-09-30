@@ -33,6 +33,10 @@ credentials.
 - `deck_mixer/CASE_LIBRARY_SCHEMA.md` — the case-library format
   contract.
 - `deck_mixer/tests/` — deck-mixer's pytest suite.
+- `mcpb/` — the Claude Desktop extension: `manifest.json`, the `main.py`
+  entry point, and `build.py`, which packs `dist/deck-mixer-<version>.mcpb`.
+  A new setting or MCP tool also goes into `manifest.json`
+  (`test_mcpb.py` checks they match).
 
 ## Guidelines
 

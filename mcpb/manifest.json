@@ -1,0 +1,172 @@
+{
+  "manifest_version": "0.4",
+  "name": "deck-mixer",
+  "display_name": "Deck Mixer",
+  "version": "0.1.0",
+  "description": "Turn a library of Markdown case studies into branded, editable PowerPoint decks.",
+  "long_description": "Builds reference, capabilities, tender and plan decks from your own case library, in your own colours, logo and template. Add at least one API key for the real result: a free Gemini key (aistudio.google.com/apikey) lets an AI art director design your slides and generates their images. Without keys decks still build, but look basic: rule-based layouts and grey image placeholders. Confidential cases are anonymised on every slide and in the speaker notes. Leave the case library empty to try the built-in sample cases.",
+  "author": {
+    "name": "Growing pAI",
+    "url": "https://growingpai.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/growing-pai-git/deck-mixer"
+  },
+  "homepage": "https://github.com/growing-pai-git/deck-mixer",
+  "support": "https://github.com/growing-pai-git/deck-mixer/issues",
+  "license": "MIT",
+  "keywords": [
+    "powerpoint",
+    "pptx",
+    "slides",
+    "deck",
+    "tender",
+    "case-studies"
+  ],
+  "server": {
+    "type": "uv",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "server/main.py"
+      ],
+      "env": {
+        "DECK_MIXER_BUNDLE": "1",
+        "LIBRARY_PATH": "${user_config.library_path}",
+        "OUTPUT_DIR": "${user_config.output_dir}",
+        "THEME_PATH": "${user_config.theme_path}",
+        "BRAND_DESCRIPTION": "${user_config.brand_description}",
+        "TEMPLATE_PATH": "${user_config.template_path}",
+        "GEMINI_API_KEY": "${user_config.gemini_api_key}",
+        "ANTHROPIC_API_KEY": "${user_config.anthropic_api_key}",
+        "OPENAI_API_KEY": "${user_config.openai_api_key}",
+        "PEXELS_API_KEY": "${user_config.pexels_api_key}",
+        "UNSPLASH_ACCESS_KEY": "${user_config.unsplash_access_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_cases",
+      "description": "List and filter the cases in the case library"
+    },
+    {
+      "name": "create_reference_deck",
+      "description": "Deep-dive deck on one or more cases"
+    },
+    {
+      "name": "create_capabilities_deck",
+      "description": "Portfolio overview grouped by capability"
+    },
+    {
+      "name": "create_tender_deck",
+      "description": "Evidence deck for a tender or pitch"
+    },
+    {
+      "name": "create_plan_deck",
+      "description": "Deck from any markdown plan or proposal"
+    },
+    {
+      "name": "add_case",
+      "description": "Add a case to the library, checking for duplicates first"
+    },
+    {
+      "name": "remove_case",
+      "description": "Archive (or delete) a case from the library"
+    },
+    {
+      "name": "configure_keys",
+      "description": "Save API keys and preferences"
+    },
+    {
+      "name": "show_config",
+      "description": "Show the current configuration"
+    },
+    {
+      "name": "preview_image",
+      "description": "Generate one test image with the current settings"
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "python": ">=3.10"
+    }
+  },
+  "user_config": {
+    "library_path": {
+      "type": "directory",
+      "title": "Case library",
+      "description": "Folder with your cases (see CASE_LIBRARY_SCHEMA.md). Leave empty to try the built-in sample cases.",
+      "required": false
+    },
+    "output_dir": {
+      "type": "directory",
+      "title": "Output folder",
+      "description": "Where decks are saved. Default: a 'decks' folder on your Desktop.",
+      "required": false
+    },
+    "theme_path": {
+      "type": "file",
+      "title": "Brand theme",
+      "description": "Optional theme.yaml with your colours, fonts and logo.",
+      "required": false
+    },
+    "brand_description": {
+      "type": "string",
+      "title": "Brand description",
+      "description": "Optional, used when no theme file is set, e.g. 'calm, trustworthy, navy and sand'. Needs an AI key.",
+      "required": false
+    },
+    "template_path": {
+      "type": "file",
+      "title": "PowerPoint template",
+      "description": "Optional 16:9 .pptx/.potx company template to build on.",
+      "required": false
+    },
+    "gemini_api_key": {
+      "type": "string",
+      "title": "Gemini API key (recommended)",
+      "description": "Strongly recommended: one free key covers AI slide design (text) and image generation. Get it at aistudio.google.com/apikey. Without any key, decks look basic.",
+      "sensitive": true,
+      "required": false
+    },
+    "anthropic_api_key": {
+      "type": "string",
+      "title": "Anthropic API key",
+      "description": "AI slide design (text) with Claude. Pair it with an image key (Gemini or OpenAI).",
+      "sensitive": true,
+      "required": false
+    },
+    "openai_api_key": {
+      "type": "string",
+      "title": "OpenAI API key",
+      "description": "AI slide design (text) and image generation.",
+      "sensitive": true,
+      "required": false
+    },
+    "pexels_api_key": {
+      "type": "string",
+      "title": "Pexels API key",
+      "description": "Stock photos (free key at pexels.com/api).",
+      "sensitive": true,
+      "required": false
+    },
+    "unsplash_access_key": {
+      "type": "string",
+      "title": "Unsplash access key",
+      "description": "Stock photos (free key at unsplash.com/developers).",
+      "sensitive": true,
+      "required": false
+    }
+  }
+}

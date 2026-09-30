@@ -174,10 +174,12 @@ generates on-brand imagery to match. Four deck types:
 
 Typical flow: list_cases (find the 2-5 relevant ones) -> create_*_deck.
 
-SETUP — everything below is OPTIONAL. Decks still build with zero keys
-(layout heuristics + free stock photos), but each key you add unlocks more.
-This is a multi-provider tool by design — plug in whichever API you already
-have a key for, no need to collect every one:
+SETUP — STRONGLY RECOMMENDED. Decks still build with zero keys, but they look
+basic: simple rule-based layouts and grey image placeholders. The AI "art
+director" (text) and generated imagery (images) are what make the decks good,
+so get the user at least one text key and one image key. This is a
+multi-provider tool by design — plug in whichever API they already have a key
+for, no need to collect every one:
 
   Planning ("art director" — per-slide layout choice, visual judgment).
   Uses whichever of these is set (llm_provider picks which, "auto" = first
@@ -194,24 +196,29 @@ have a key for, no need to collect every one:
       • OPENAI_API_KEY       OpenAI gpt-image-1
       • STABILITY_API_KEY / TOGETHER_API_KEY / FAL_KEY / REPLICATE_API_TOKEN
 
-  Stock photos (authentic subjects / fallback — no AI key needed):
+  Stock photos (authentic subjects / fallback — no AI image key needed):
       • PEXELS_API_KEY       pexels.com/api, free
       • UNSPLASH_ACCESS_KEY  unsplash.com/developers
 
-FASTEST START: one free Gemini key covers BOTH planning and images —
-get one at aistudio.google.com.
+FASTEST START: one free Gemini key covers BOTH text and images —
+get one at https://aistudio.google.com/apikey (a Google account is enough).
 
-ACTION: Ask the user which keys they have (or suggest the fastest-start tip
-above), then call `configure_keys` with whatever they give you — only set
-llm_provider/image_provider if they want to override "auto". To proceed with
-zero keys, call `configure_keys` with none — that records setup so you won't
-be asked again. Tip: run `preview_image` to confirm imagery actually comes
+ACTION: Explain to the user that keys make the decks much better, and
+recommend the free Gemini key. The safest way to add it keeps the key out of
+this chat: they run `pandoro deck-mixer configure --gemini-api-key <key>` in
+their own terminal, then restart Claude so this server picks it up. If they'd rather give it here, call `configure_keys` with
+it — only set llm_provider/image_provider if they want to override "auto".
+If they explicitly choose to go without, call `configure_keys` with no keys —
+that records setup so you won't be asked again. Tip: run `preview_image` to confirm imagery actually comes
 back, and `show_config` any time to check what's active.
 """
 
 
 def _first_run_guard() -> str | None:
-    """Return the onboarding prompt the first time a deck tool is used."""
+    """Return the onboarding prompt the first time a deck tool is used.
+    Skipped in the Claude Desktop bundle: its install form already asked."""
+    if os.environ.get("DECK_MIXER_BUNDLE"):
+        return None
     return _ONBOARDING if is_first_run() else None
 
 
@@ -416,7 +423,7 @@ def create_reference_deck(
 
     out = _outfile("reference", filename)
     path = build_reference_deck(cases, KB_PATH, out, TEMPLATE_PATH, theme=THEME)
-    return f"Created reference deck ({len(cases)} case(s)): {path}"
+    return f"{_missing_key_warning(text=False)}Created reference deck ({len(cases)} case(s)): {path}"
 
 
 # ---------------------------------------------------------------------------
@@ -518,7 +525,7 @@ def create_tender_deck(
     out = _outfile("tender", filename)
     path = build_tender_deck(cases, KB_PATH, out, brief=brief,
                              template_path=TEMPLATE_PATH, theme=THEME)
-    return f"Created tender deck ({len(cases)} cases): {path}"
+    return f"{_missing_key_warning()}Created tender deck ({len(cases)} cases): {path}"
 
 
 # ---------------------------------------------------------------------------
@@ -589,26 +596,11 @@ def create_plan_deck(
     return f"{warning}Created plan deck: {path}"
 
 
-def _missing_key_warning() -> str:
-    """Warn upfront (before reporting the built deck) about any enhancement
-    that has no configured key, instead of silently degrading. Checks every
-    supported planning/image provider, not just Anthropic/Pexels."""
-    from . import llm
-    from .imagegen import configured_providers as image_providers
-
-    missing = []
-    if not llm.configured_providers():
-        missing.append("AI planning (falling back to layout heuristics) — "
-                       "set GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY")
-    if not image_providers() and not os.environ.get("PEXELS_API_KEY") \
-            and not os.environ.get("UNSPLASH_ACCESS_KEY"):
-        missing.append("Images (slides get placeholders to replace with your own pictures) — "
-                       "set GEMINI_API_KEY, PEXELS_API_KEY, or another image key")
-    if not missing:
-        return ""
-    lines = "\n".join(f"  ✗ {m}" for m in missing)
-    return (f"⚠️  Missing API keys — building with reduced quality:\n{lines}\n"
-            f"Run configure_keys to add one (a free GEMINI_API_KEY covers both).\n\n")
+def _missing_key_warning(text: bool = True, images: bool = True) -> str:
+    """Upfront notice (before the built deck's path) of what missing keys cost."""
+    from .keys import HOW_BUNDLE, HOW_MCP, missing_keys_notice
+    how = HOW_BUNDLE if os.environ.get("DECK_MIXER_BUNDLE") else HOW_MCP
+    return missing_keys_notice(text=text, images=images, how=how)
 
 
 # ---------------------------------------------------------------------------

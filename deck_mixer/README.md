@@ -53,7 +53,7 @@ pip install -e .          # from a checkout, for now
 # Explore the bundled sample library
 pandoro deck-mixer list --library deck_mixer/examples/sample-library
 
-# Build decks — works with zero API keys (layout heuristics, image placeholders)
+# Build decks — these run without keys, but see "API keys" below for the real result
 pandoro deck-mixer build reference --library deck_mixer/examples/sample-library --cases northwind-retail-support
 pandoro deck-mixer build capabilities --library deck_mixer/examples/sample-library
 pandoro deck-mixer build tender --library deck_mixer/examples/sample-library --tender-tags "human in the loop"
@@ -63,12 +63,38 @@ pandoro deck-mixer build plan --title "Q1 Plan" --content my-plan.md
 pandoro deck-mixer build reference --library ~/my-cases --theme ~/my-brand/theme.yaml --cases some-case
 ```
 
-Add API keys to unlock AI planning and imagery (works with zero keys too —
-each key just unlocks more):
+## API keys — strongly recommended
 
-```bash
-pandoro deck-mixer configure --gemini-api-key AIza...   # one free key covers planning + images
-```
+Decks build without keys, but they look basic: rule-based layouts and grey
+image placeholders. Add at least one key for **text** (an AI "art director"
+designs each slide) and one for **images** (generated pictures for those
+slides). One free [Gemini key](https://aistudio.google.com/apikey) covers both.
+
+| Key | Text (AI slide design) | Images | Cost |
+|---|---|---|---|
+| `GEMINI_API_KEY` (recommended) | ✓ | ✓ AI-generated | Free tier |
+| `OPENAI_API_KEY` | ✓ | ✓ AI-generated | Paid |
+| `ANTHROPIC_API_KEY` | ✓ | — | Paid |
+| `STABILITY_API_KEY`, `TOGETHER_API_KEY`, `FAL_KEY`, `REPLICATE_API_TOKEN` | — | ✓ AI-generated | Paid |
+| `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY` | — | ✓ stock photos | Free |
+
+How to add them, by how you run Deck Mixer:
+
+- **CLI:** `pandoro deck-mixer configure --gemini-api-key AIza...` saves it
+  to `~/.config/pandoro/keys.json` (owner-only). Environment variables with
+  the names above work too and take priority.
+- **Claude Desktop extension:** Settings → Extensions → Deck Mixer; keys are
+  stored in the OS keychain.
+- **MCP server / Claude Code skill:** run the `configure` command above in your
+  own terminal and restart Claude, or ask Claude to call `configure_keys`.
+- **Skill in a claude.ai chat:** the sandbox forgets keys when the chat ends —
+  prefer the extension or Claude Code for AI-designed decks.
+
+Every reference, tender and plan build prints a warning when a key it would
+use is missing. With a key, the text of the cases in that deck is sent to that
+provider; confidential client names are replaced with "the client" first.
+See the [HOWTO](HOWTO.md#step-6--add-your-api-keys-strongly-recommended) for a
+step-by-step walkthrough.
 
 ## Case library
 
@@ -108,6 +134,23 @@ client) can browse your library and build decks conversationally:
 ```
 
 or `pandoro deck-mixer mcp serve` directly.
+
+### Claude Desktop extension (one click)
+
+Download `deck-mixer-<version>.mcpb` from the
+[Releases page](https://github.com/growing-pai-git/deck-mixer/releases) and
+double-click it. Claude Desktop installs it (including Python and every
+dependency) and shows a settings form: case library folder, output folder,
+theme, template and API keys (stored in your OS keychain). Paste at least a
+free Gemini key there — without keys, decks come out basic. Leave the folders
+empty to try it on the built-in sample cases. The first launch
+takes a little longer while dependencies download.
+
+To build the bundle yourself (Python 3.11+ and Node.js):
+
+```bash
+python mcpb/build.py      # writes dist/deck-mixer-<version>.mcpb
+```
 
 ## Development
 

@@ -2,8 +2,9 @@
 
 Turn a library of Markdown case studies into branded, editable PowerPoint
 decks — reference decks, capability overviews, tender decks, and free-form
-plans. Works with zero API keys; add one to let an AI "art director" plan
-each slide's layout and imagery.
+plans. Add a free Gemini API key and an AI "art director" designs your slides
+and generates its images; without keys it still runs, but the decks look
+basic ([how to add keys](deck_mixer/README.md#api-keys--strongly-recommended)).
 
 Made by [Growing pAI](https://growingpai.com). Installs as the `pandoro`
 command: every Deck Mixer command is `pandoro deck-mixer ...`.

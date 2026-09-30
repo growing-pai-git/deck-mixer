@@ -28,20 +28,34 @@ one. There are four deck "shapes" it can build:
 
 ## The easiest way: use it inside Claude, no terminal at all
 
-If someone handed you a `deck-mixer-skill.zip` file, you don't need any of
+**Claude Desktop:** download `deck-mixer-<version>.mcpb` from the
+[Releases page](https://github.com/growing-pai-git/deck-mixer/releases) and
+double-click it. In the form that appears, pick your case-library folder (or
+leave it empty to try the sample cases) and **paste a free Gemini API key** —
+without one, decks come out basic ([Step 6](#step-6--add-your-api-keys-strongly-recommended)
+shows how to get it in two minutes). Then ask Claude for a deck. Nothing else
+to install.
+
+**A skill zip instead:** if someone handed you a `deck-mixer-skill.zip` file, you don't need any of
 the terminal steps below — skip straight to this:
 
-1. Unzip it, then drop the `deck-mixer` folder it contains into your Claude
-   Skills folder (in Claude Desktop: Settings → Capabilities → Skills → Add
-   skill; in Claude Code: `~/.claude/skills/`).
+1. Add it to Claude: in claude.ai or Claude Desktop, upload the zip under
+   Settings → Capabilities → Skills (code execution must be on); in Claude
+   Code, unzip it into `~/.claude/skills/`.
 2. Open a chat with Claude and just ask, in plain language: *"Build me a
    reference deck for our work with Acme"* or *"I need a capabilities
    overview deck."*
 
 Claude runs every command in this guide for you (including the one-time
-setup) and hands you back the finished `.pptx`. It'll ask you where your
-case library is and whether you have brand colors — you can answer those in
-a sentence, no file formats to learn. Case-library setup ([Step 4](#step-4--use-your-own-cases))
+setup) and hands you back the finished `.pptx`. It'll ask about your case
+library and whether you have brand colors — you can answer those in a
+sentence, no file formats to learn. In a claude.ai or Claude Desktop chat,
+Claude works in a sandbox that can't see your computer: upload your case
+library as a zip in the chat, and download the deck when it's done. That
+sandbox also forgets API keys when the chat ends, so decks built there look
+basic unless you give Claude a key each time. For AI-designed decks, use the
+Claude Desktop extension above or Claude Code, where you set your key once
+([Step 6](#step-6--add-your-api-keys-strongly-recommended)). Case-library setup ([Step 4](#step-4--use-your-own-cases))
 and theming ([Step 5](#step-5--make-it-look-like-your-brand)) work the same
 way — just describe what you want and let Claude run the commands.
 
@@ -64,6 +78,12 @@ or to script/automate deck building.
   If you see a number like `3.10.x` or higher, you're good. If you get an
   error, install Python from [python.org](https://www.python.org/downloads/)
   first, then come back.
+
+- **A free Google Gemini API key — strongly recommended.** It's what makes
+  the decks look designed: AI slide layouts and generated images. You can
+  start without it and add it in
+  [Step 6](#step-6--add-your-api-keys-strongly-recommended), but don't show a
+  keyless deck to a client.
 
 That's it — no coding required for the steps below, just copying and
 pasting commands.
@@ -130,6 +150,11 @@ pandoro deck-mixer build capabilities --library deck_mixer/examples/sample-libra
 pandoro deck-mixer build tender --library deck_mixer/examples/sample-library --tender-tags "human in the loop"
 ```
 
+Notice the grey image boxes and the warning printed above the file name?
+That's what a deck looks like **without API keys**. Before you go further,
+jump to [Step 6](#step-6--add-your-api-keys-strongly-recommended) and add a
+free Gemini key — then build the same deck again and compare.
+
 ## Step 4 — Use your own cases
 
 The sample library is just for trying things out. To use Pandoro for real,
@@ -191,25 +216,67 @@ colors (they're just hex codes, e.g. `1E293B`) to match your brand. Drop a
 pandoro deck-mixer build reference --library ~/my-cases --cases my-first-case --theme ~/my-brand/theme.yaml
 ```
 
-## Step 6 (optional) — Make decks smarter with an API key
+## Step 6 — Add your API keys (strongly recommended)
 
-Everything above works with **zero setup** — no accounts, no API keys.
-Adding one free API key unlocks two upgrades: an AI "art director" that
-picks each slide's layout more thoughtfully, and AI-generated imagery
-instead of grey image placeholders.
+Without API keys, decks look basic: every slide follows the same simple
+layout rules, and every picture is a grey placeholder box. With keys, an AI
+"art director" designs each slide around what it needs to say (**text**), and
+matching pictures are generated for it (**images**). Add at least one key for
+text and one for images — a single free Gemini key covers both.
 
-The easiest option is a free Google Gemini key:
+### Which keys do what
 
-1. Go to [aistudio.google.com](https://aistudio.google.com/) and get a free
-   API key.
-2. Save it so Pandoro remembers it:
-   ```bash
-   pandoro deck-mixer configure --gemini-api-key AIzaSy...your-key-here
-   ```
-3. Build a deck as usual — it'll automatically be richer now.
+| Key | Text (AI slide design) | Images | Cost |
+|---|---|---|---|
+| **Google Gemini** (recommended) | ✓ | ✓ AI-generated | Free tier |
+| OpenAI | ✓ | ✓ AI-generated | Paid, per use |
+| Anthropic (Claude) | ✓ | — | Paid, per use |
+| Stability, Together, fal, Replicate | — | ✓ AI-generated | Paid, per image |
+| Pexels, Unsplash | — | ✓ stock photos | Free |
 
-This step is entirely optional and skippable. Decks built without a key are
-still complete, real, editable decks — just simpler layouts, with marked image placeholders where a picture would go.
+A Claude or OpenAI text key also works; pair a Claude key with an image key.
+
+### Get a free Gemini key (two minutes)
+
+1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+   and sign in with any Google account.
+2. Click **Create API key** and copy it (it starts with `AIza`).
+
+Other keys: [Anthropic](https://console.anthropic.com/settings/keys) ·
+[OpenAI](https://platform.openai.com/api-keys) ·
+[Pexels](https://www.pexels.com/api/) ·
+[Unsplash](https://unsplash.com/developers).
+
+### Add it — depending on how you use Deck Mixer
+
+- **In the terminal** (this guide): save it once, and every deck after that
+  uses it:
+  ```bash
+  pandoro deck-mixer configure --gemini-api-key AIza...your-key
+  ```
+  Other keys work the same way: `--anthropic-api-key`, `--openai-api-key`,
+  `--pexels-api-key`, `--unsplash-access-key`. They're stored in
+  `~/.config/pandoro/keys.json`, readable only by you. Run
+  `pandoro deck-mixer configure` with no options to see what's set.
+- **Claude Desktop extension:** open Claude Desktop's Settings → Extensions →
+  Deck Mixer and paste the key into the Gemini field. It's kept in your
+  computer's secure keychain.
+- **Claude Code (skill or MCP server):** run the `configure` command above in
+  your own terminal, not in the chat, then restart Claude Code.
+- **Skill in a claude.ai or Claude Desktop chat:** the sandbox forgets keys
+  when the chat ends, and anything you paste stays in the chat history. For
+  AI-designed decks, the extension or Claude Code is the better home. If you
+  do paste a key, use a separate one you can delete afterwards.
+
+### Check that it worked
+
+Build any deck again. The "built without AI keys" warning is gone, the image
+boxes are filled with pictures, and slide layouts vary.
+
+**What gets sent:** to design slides and pictures, the text of the cases in
+that deck goes to the AI provider whose key you added. Confidential clients
+are already replaced with "the client" before anything is sent. A plan deck
+sends your document as written.
 
 ## Step 7 (optional) — Package it as a Claude Skill for others
 
@@ -222,8 +289,9 @@ pandoro deck-mixer skill pack
 
 This writes `deck-mixer-skill.zip` in your current folder — a self-contained
 copy of Pandoro (no PyPI or GitHub access needed to install it) plus
-instructions for Claude on how to use it. Send that file to anyone with
-Claude Desktop or Claude Code and point them at
+instructions for Claude on how to use it. It works on macOS, Linux and
+Windows. Send that file to anyone using claude.ai, Claude Desktop or Claude
+Code and point them at
 [The easiest way](#the-easiest-way-use-it-inside-claude-no-terminal-at-all)
 above.
 
@@ -271,7 +339,7 @@ anything in the library. Run `pandoro deck-mixer list --library <path>` first an
 the exact slug from that output.
 
 **The deck looks plain / has no images** — that's expected with no API key
-configured; see [Step 6](#step-6-optional--make-decks-smarter-with-an-api-key).
+configured; see [Step 6](#step-6--add-your-api-keys-strongly-recommended).
 It's not a bug.
 
 **Still stuck?** Open an issue on the GitHub repo with the exact command you

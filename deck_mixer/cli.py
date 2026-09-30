@@ -50,6 +50,14 @@ def _output_path(args: argparse.Namespace, prefix: str) -> Path:
 # build
 # ---------------------------------------------------------------------------
 
+def _key_notice(*, text: bool, images: bool) -> None:
+    """Say what missing API keys cost this deck (stderr, so stdout stays the path)."""
+    from .keys import HOW_CLI, missing_keys_notice
+    notice = missing_keys_notice(text=text, images=images, how=HOW_CLI)
+    if notice:
+        print(notice.rstrip(), file=sys.stderr)
+
+
 def cmd_build_reference(args: argparse.Namespace) -> None:
     from .builder import build_reference_deck
     from .kb import filter_cases, load_catalog
@@ -61,6 +69,7 @@ def cmd_build_reference(args: argparse.Namespace) -> None:
         sys.exit(1)
     out = _output_path(args, "reference")
     path = build_reference_deck(cases, lib, out, args.template, theme=_theme(args))
+    _key_notice(text=False, images=True)
     print(f"Created reference deck ({len(cases)} case(s)): {path}")
 
 
@@ -102,6 +111,7 @@ def cmd_build_tender(args: argparse.Namespace) -> None:
     out = _output_path(args, "tender")
     path = build_tender_deck(cases, lib, out, brief=args.brief or "",
                              template_path=args.template, theme=_theme(args))
+    _key_notice(text=True, images=True)
     print(f"Created tender deck ({len(cases)} cases): {path}")
 
 
@@ -121,6 +131,7 @@ def cmd_build_plan(args: argparse.Namespace) -> None:
         company=args.company or "",
         theme=_theme(args),
     )
+    _key_notice(text=True, images=not args.no_enrich)
     print(f"Created plan deck: {path}")
 
 
@@ -319,7 +330,7 @@ def cmd_skill_pack(args: argparse.Namespace) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     zip_path = out_dir / "deck-mixer-skill.zip"
 
-    # Bundle the engine's own source so `setup.sh` can install it locally —
+    # Bundle the engine's own source so `setup.py` can install it locally —
     # pandoro isn't on PyPI yet, so the skill ships the source it installs.
     # From a source checkout ship the real project files; from an installed
     # wheel (site-packages) rebuild a minimal pyproject from the metadata.
@@ -327,26 +338,28 @@ def cmd_skill_pack(args: argparse.Namespace) -> None:
                              repo_root / "LICENSE") if f.exists()]
     synthesized = {} if (repo_root / "pyproject.toml").exists() else _pyproject_from_metadata()
     src_packages = ["pandoro", "deck_mixer"]
-    skip_dirs = {"__pycache__", "skill_template"}
+    skip_dirs = {"__pycache__", "skill_template", "tests", "architecture"}
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for f in sorted(template_dir.iterdir()):
-            zf.write(f, arcname=f"deck-mixer/{f.name}")
+            if f.is_file():
+                zf.write(f, arcname=f"deck-mixer/{f.name}")
         for f in src_files:
             zf.write(f, arcname=f"deck-mixer/vendor/pandoro-src/{f.name}")
         for name, text in synthesized.items():
             zf.writestr(f"deck-mixer/vendor/pandoro-src/{name}", text)
         for pkg in src_packages:
             for f in sorted((repo_root / pkg).rglob("*")):
-                if f.is_dir() or any(part in skip_dirs for part in f.parts):
+                if f.is_dir() or skip_dirs & set(f.relative_to(repo_root).parts):
                     continue
                 rel = f.relative_to(repo_root)
                 zf.write(f, arcname=f"deck-mixer/vendor/pandoro-src/{rel}")
 
     print(f"Wrote {zip_path}")
-    print("  - unzip into your Claude Skills directory")
-    print("  - it ships no case library or theme: point it at your own via "
-          "--library/--theme, or a --brand-description")
+    print("  - claude.ai / Claude Desktop: Settings > Capabilities > Skills > upload the zip")
+    print("  - Claude Code: unzip into ~/.claude/skills/")
+    print("  - includes the sample cases only: point it at your own library "
+          "and theme via --library/--theme, or a --brand-description")
 
 
 # ---------------------------------------------------------------------------
@@ -364,7 +377,7 @@ _CONFIGURABLE_KEYS = (
 
 
 def cmd_configure(args: argparse.Namespace) -> None:
-    from .config import CONFIG_FILE, load_config, mask, save_config
+    from .config import CONFIG_FILE, inject_keys, load_config, mask, save_config
 
     updates = {k: v for k, v in vars(args).items() if k in _CONFIGURABLE_KEYS and v is not None}
     if updates:
@@ -377,6 +390,13 @@ def cmd_configure(args: argparse.Namespace) -> None:
         v = cfg.get(k)
         display = mask(v) if k.endswith("_key") or k.endswith("_token") else (v or "(not set)")
         print(f"  {k:22s}: {display}")
+
+    from .keys import GEMINI_KEY_URL, has_image_key, has_text_key
+    inject_keys()
+    if not (has_text_key() and has_image_key()):
+        print("\nNo AI key for text and/or images yet — decks will look basic.\n"
+              f"One free Gemini key covers both: {GEMINI_KEY_URL}\n"
+              "  pandoro deck-mixer configure --gemini-api-key <your key>")
 
 
 # ---------------------------------------------------------------------------
