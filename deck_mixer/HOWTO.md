@@ -236,6 +236,11 @@ text and one for images — a single free Gemini key covers both.
 
 A Claude or OpenAI text key also works; pair a Claude key with an image key.
 
+Using Deck Mixer inside Claude (the extension or the skill)? Then Claude
+designs your **plan** decks itself, so those don't need a text key. You
+still want a key for the **images**, and for the AI design of **tender**
+decks — the free Gemini key covers both.
+
 ### Get a free Gemini key (two minutes)
 
 1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)

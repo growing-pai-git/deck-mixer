@@ -138,6 +138,30 @@ Add `--filename my-deck` to control the output name, and `--output-dir` to
 control where it's written; otherwise the filename is timestamped and it
 lands in the current directory.
 
+## Design plan decks yourself
+
+For `build plan`, you are the art director — no planner key needed. Without
+your plan (and without a planner key) the deck falls back to basic built-in
+layouts.
+
+1. Get the starting plan and the design rules:
+   ```bash
+   pandoro deck-mixer build plan --title "..." --content outline.md --plan-only > plan.json
+   ```
+   The JSON has `rules` (follow them), `layouts` (the only allowed values) and
+   `slides` — one entry per `## ` heading: `heading` (the join key — keep it
+   exactly), `layout`, `headline` (<= 9 words), `bullets` (3–5, omit for
+   statement/quote) and `visual` (`want`, `medium` generate|photo, and a
+   one-sentence `brief` describing the image).
+2. Rewrite `slides` following the rules, and for a non-technical user, show
+   them the slide-by-slide outline first and adjust it with them.
+3. Save the `slides` list to a file and build with it:
+   ```bash
+   pandoro deck-mixer build plan --title "..." --content outline.md --plan slides.json
+   ```
+   Any `Plan adjustment:` lines it prints are slides that fell back to the
+   built-in layout — fix those entries and build again.
+
 ## Rules that matter
 
 **Confidentiality.** Pass `--exclude-confidential` on anything that leaves

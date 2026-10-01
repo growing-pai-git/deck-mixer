@@ -34,13 +34,15 @@ __all__ = ["glaze", "plan", "fetch", "place", "infer_style",
 
 
 def plan(sections: list[tuple[str, str]], company: str = "",
-         layouts: tuple | None = None, theme: Theme = DEFAULT_THEME) -> list[SlidePlan]:
+         layouts: tuple | None = None, theme: Theme = DEFAULT_THEME,
+         slide_plan: list[dict] | None = None) -> list[SlidePlan]:
     """Step 1 — Plan: build the storyline, DEMAND visuals and DESCRIBE them
     (each demanded image carries a brief), then evaluate which demands earn
     their place (an LLM when a key is set, heuristics otherwise).
 
     `layouts` restricts which layout choices are offered (see make_recipe)."""
-    slides = make_recipe(sections, company=company, layouts=layouts, theme=theme)
+    slides = make_recipe(sections, company=company, layouts=layouts, theme=theme,
+                         slide_plan=slide_plan)
     return proof(slides, theme=theme)
 
 
@@ -52,7 +54,8 @@ def fetch(slides: list[SlidePlan], style: DeckStyle) -> list[SlidePlan]:
 
 def glaze(sections: list[tuple[str, str]], company: str = "",
           fill: bool = True, style: DeckStyle | None = None,
-          layouts: tuple | None = None, theme: Theme = DEFAULT_THEME) -> list[SlidePlan]:
+          layouts: tuple | None = None, theme: Theme = DEFAULT_THEME,
+          slide_plan: list[dict] | None = None) -> list[SlidePlan]:
     """Run the three Glaze steps and return finished SlidePlans.
 
         1. Plan   — demand + describe the visuals (recipe + proof)
@@ -68,9 +71,12 @@ def glaze(sections: list[tuple[str, str]], company: str = "",
         layouts:  restrict which layouts the planner may choose (default: all).
         theme:    active Theme — supplies the palette/mood anchor and company
                   name used in planning prompts.
+        slide_plan: a validated caller-supplied plan (planner.validate_plan);
+                  skips the planner.
     """
     deck_style = style or infer_style(sections, company=company, theme=theme)
-    slides = plan(sections, company=company, layouts=layouts, theme=theme)  # 1. demand + describe
+    slides = plan(sections, company=company, layouts=layouts, theme=theme,  # 1. demand + describe
+                  slide_plan=slide_plan)
     if fill:
         slides = fetch(slides, deck_style)          # 2. get images
     slides = place(slides)                           # 3. place them

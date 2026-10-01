@@ -116,9 +116,31 @@ def cmd_build_tender(args: argparse.Namespace) -> None:
 
 
 def cmd_build_plan(args: argparse.Namespace) -> None:
-    from .builder import build_plan_deck
+    import json
+
+    from .builder import build_plan_deck, split_sections
+    from .planner import DESIGN_RULES, PLAN_LAYOUTS, describe_plan, plan_deck, validate_plan
 
     content_md = Path(args.content).expanduser().read_text(encoding="utf-8")
+    sections = split_sections(content_md)
+    theme = _theme(args)
+    validated, fixes = None, []
+    if args.plan:
+        try:
+            raw = json.loads(Path(args.plan).expanduser().read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"Can't read --plan {args.plan}: {e}", file=sys.stderr)
+            sys.exit(1)
+        validated, fixes = validate_plan(sections, raw, theme=theme)
+
+    if args.plan_only:
+        planned = validated if validated is not None else plan_deck(
+            sections, company=args.company or "", theme=theme)
+        print(json.dumps({"rules": DESIGN_RULES, "layouts": list(PLAN_LAYOUTS),
+                          "slides": describe_plan(sections, planned), "fixes": fixes},
+                         indent=2, ensure_ascii=False))
+        return
+
     out = _output_path(args, "plan")
     path = build_plan_deck(
         title=args.title,
@@ -129,9 +151,12 @@ def cmd_build_plan(args: argparse.Namespace) -> None:
         template_path=args.template,
         enrich=not args.no_enrich,
         company=args.company or "",
-        theme=_theme(args),
+        theme=theme,
+        slide_plan=validated,
     )
-    _key_notice(text=True, images=not args.no_enrich)
+    for fix in fixes:
+        print(f"Plan adjustment: {fix}", file=sys.stderr)
+    _key_notice(text=validated is None, images=not args.no_enrich)
     print(f"Created plan deck: {path}")
 
 
@@ -472,7 +497,12 @@ def register(tool_sub: argparse._SubParsersAction) -> None:
     plan.add_argument("--subtitle")
     plan.add_argument("--label", help='Small label above the title (default: "Plan of Approach")')
     plan.add_argument("--company", help="Client/company name, for planner tone")
-    plan.add_argument("--no-enrich", action="store_true", help="Skip AI planning/imagery")
+    plan.add_argument("--no-enrich", action="store_true",
+                      help="Skip fetching images (image slots stay placeholders)")
+    plan.add_argument("--plan", help="JSON slide plan to use instead of the planner "
+                                     "(the 'slides' list from --plan-only, edited)")
+    plan.add_argument("--plan-only", action="store_true",
+                      help="Print the slide plan (and the design rules) as JSON; build nothing")
     plan.set_defaults(func=_leaf(cmd_build_plan))
 
     lst = sub.add_parser("list", help="List cases in a library")

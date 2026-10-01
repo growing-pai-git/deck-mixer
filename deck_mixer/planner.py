@@ -4,12 +4,14 @@ Reads a document's storyline (its sections) and decides, per slide, the
 layout and visual treatment: which slides are clean information, which get a
 photo, which become a bold statement, which carry a diagram, etc.
 
-Uses Claude (tool use) when ANTHROPIC_API_KEY is set; otherwise falls back to
-deterministic heuristics so decks still get varied, sensible layouts.
+Where the plan comes from, in order: a plan supplied by the caller (e.g.
+Claude, via create_plan_deck's slide_plan — checked by validate_plan), else an
+LLM when a key is set, else deterministic heuristics so decks still get
+varied, sensible layouts.
 
 Each planned slide:
     {
-      "layout": "statement|bullets|photo_split|quote|diagram",
+      "layout": one of LAYOUTS,
       "headline": str,
       "bullets": [str, ...],
       "speaker_notes": str,
@@ -100,30 +102,44 @@ def _build_tool(layouts: tuple) -> dict:
         },
     }
 
+# The design judgement behind every plan. Used verbatim in the internal
+# planner's prompt AND in create_plan_deck's slide_plan description, so a plan
+# from the LLM planner and a plan from Claude follow the same rules.
+DESIGN_RULES = (
+    "DESIGN a varied, beautiful slide deck — each slide's layout should suit its "
+    "own content, and the deck as a whole should have rhythm. Hard rules: never "
+    "use the same layout on two consecutive slides; alternate image_left and "
+    "image_right; reserve image_full and statement for emphasis (at most ~1 in 4 "
+    "slides each); statement and quote show one short line, so use them only for "
+    "a section with a single idea; put dense detail on clean bullet slides. "
+    "For EACH slide, decide the visual demand: set visual.want true only where "
+    "an image genuinely strengthens the message, and when true write a vivid "
+    "one-sentence brief DESCRIBING the image to create — its subject, "
+    "composition and mood — connected to that slide's point and the overall "
+    "storyline, not a search query. Prefer AI-generated imagery "
+    "(medium=generate); choose photo only for authentic people/places. "
+    "Restraint reads as premium — not every slide needs a visual."
+)
+
+# Layouts a caller-supplied plan may use: the ones that need no extra data.
+# (diagram/chart/kpi need a structured spec the internal planner derives.)
+PLAN_LAYOUTS = ("statement", "bullets", "quote", "image_left", "image_right", "image_full")
+
+
 def _build_system(theme: Theme) -> str:
     return (
         f"You are the art director for {theme.company_name}. "
-        "Given a document's sections, DESIGN a varied, beautiful slide deck — each "
-        "slide's layout should suit its own content, and the deck as a whole should "
-        "have rhythm. Hard rules: never use the same layout on two consecutive "
-        "slides; alternate image_left and image_right; reserve image_full and "
-        "statement for emphasis (at most ~1 in 4 slides each); put dense detail on "
-        "clean bullet slides; use diagram/chart/kpi when the content is structural "
-        "or numeric. "
-        "For EACH slide, decide the visual demand: set visual.want true only where "
-        "an image genuinely strengthens the message (never on data/diagram slides), "
-        "and when true write a vivid one-sentence brief DESCRIBING the image to "
-        "create — its subject, composition and mood — connected to that slide's "
-        f"point and the overall storyline. Theme to honour: {', '.join(theme.mood)}; "
-        f"a {theme.palette_description} palette; clean, premium, lots of "
-        "negative space. Prefer AI-generated abstract imagery; choose photo only "
-        "for authentic people/places. Restraint reads as premium — not every slide "
-        "needs a visual."
+        "Given a document's sections, " + DESIGN_RULES + " "
+        "Use diagram/chart/kpi when the content is structural or numeric, and "
+        "never put an image on those. "
+        f"Theme to honour: {', '.join(theme.mood)}; a {theme.palette_description} "
+        "palette; clean, premium, lots of negative space."
     )
 
 
 def plan_deck(sections: list[tuple[str, str]], company: str = "",
-              layouts: tuple = LAYOUTS, theme: Theme = DEFAULT_THEME) -> list[dict]:
+              layouts: tuple = LAYOUTS, theme: Theme = DEFAULT_THEME,
+              plan: list[dict] | None = None) -> list[dict]:
     """Return a per-section plan — one entry per section, given the OBJECTIVE
     of that section, choosing whichever layout best serves it. Uses an LLM
     when a key is configured; otherwise a varied heuristic rotation.
@@ -131,6 +147,8 @@ def plan_deck(sections: list[tuple[str, str]], company: str = "",
     `layouts` restricts which layout choices are offered — pass a subset when
     the caller can't back every layout with real data (e.g. no quotes/charts).
     """
+    if plan is not None:            # supplied by the caller, already validated
+        return plan
     from .llm import call_json
 
     system = _build_system(theme)
@@ -150,6 +168,110 @@ def plan_deck(sections: list[tuple[str, str]], company: str = "",
     if plan and len(plan) == len(sections):
         return plan
     return [_heuristic_slide(h, b, i, layouts, theme) for i, (h, b) in enumerate(sections)]
+
+
+# --- Caller-supplied plans (e.g. Claude via create_plan_deck) ---------------
+
+_VISUAL_ROLE = {"image_left": "split", "image_right": "split",
+                "image_full": "background", "statement": "background"}
+
+
+def _norm(heading: str) -> str:
+    return " ".join(str(heading).split()).casefold()
+
+
+def _text(value, limit: int) -> str:
+    return " ".join(value.split())[:limit] if isinstance(value, str) else ""
+
+
+def validate_plan(sections: list[tuple[str, str]], slide_plan,
+                  theme: Theme = DEFAULT_THEME) -> tuple[list[dict], list[str]]:
+    """Turn a caller's slide_plan into a complete, safe plan for `sections`.
+
+    Entries join to sections on their `heading`. Anything missing or invalid
+    falls back to the heuristic plan for that slide only, and each fallback is
+    described in the returned fixes so the caller can correct and resend.
+    """
+    from .glaze.recipe import is_short_section
+
+    fixes: list[str] = []
+    entries = slide_plan.get("slides") if isinstance(slide_plan, dict) else slide_plan
+    if not isinstance(entries, list):
+        fixes.append("slide_plan is not a list of slides; used the built-in layouts")
+        entries = []
+
+    by_heading: dict[str, dict] = {}
+    for i, entry in enumerate(entries, 1):
+        if not isinstance(entry, dict) or not _text(entry.get("heading"), 200):
+            fixes.append(f"slide_plan entry {i}: no heading, ignored")
+            continue
+        key = _norm(entry["heading"])
+        if key in by_heading:
+            fixes.append(f"slide_plan entry {i}: heading '{entry['heading']}' repeats, kept the first")
+            continue
+        by_heading[key] = entry
+    known = {_norm(h) for h, _ in sections}
+    for key, entry in by_heading.items():
+        if key not in known:
+            fixes.append(f"'{entry['heading']}' matches no '## ' heading in the content, ignored")
+
+    plan: list[dict] = []
+    for idx, (heading, body) in enumerate(sections):
+        n = idx + 1
+        fallback = _heuristic_slide(heading, body, idx, PLAN_LAYOUTS, theme)
+        entry = by_heading.get(_norm(heading))
+        if entry is None:
+            fixes.append(f"slide {n} '{heading}': not in slide_plan, "
+                         f"used the built-in layout ({fallback['layout']})")
+            plan.append(fallback)
+            continue
+
+        layout = _text(entry.get("layout"), 40)
+        if layout not in PLAN_LAYOUTS:
+            fixes.append(f"slide {n} '{heading}': layout '{layout}' is not one of "
+                         f"{', '.join(PLAN_LAYOUTS)}; used {fallback['layout']}")
+            layout = fallback["layout"]
+        elif layout in ("statement", "quote") and not is_short_section(body):
+            fixes.append(f"slide {n} '{heading}': too much content for a {layout} slide; "
+                         "used bullets (or shorten the section)")
+            layout = "bullets"
+
+        bullets = entry.get("bullets")
+        if isinstance(bullets, list):
+            bullets = [b for b in (_text(x, 300) for x in bullets) if b][:6]
+        else:
+            if bullets is not None:
+                fixes.append(f"slide {n} '{heading}': bullets must be a list of strings; "
+                             "used the content's own bullets")
+            bullets = fallback["bullets"]
+
+        visual = entry.get("visual")
+        if isinstance(visual, dict) and visual.get("want") is True:
+            medium = visual.get("medium") if visual.get("medium") in ("generate", "photo") else "generate"
+            vis = {"want": True, "role": _VISUAL_ROLE.get(layout, "split"), "medium": medium,
+                   "brief": _text(visual.get("brief"), 400)}
+            if not vis["brief"]:
+                fixes.append(f"slide {n} '{heading}': visual.want without a brief; "
+                             "the image will be described from the headline")
+        else:
+            vis = {"want": False, "role": "split", "medium": "generate", "brief": ""}
+
+        plan.append({
+            "layout": layout,
+            "headline": _text(entry.get("headline"), 120) or heading,
+            "bullets": bullets,
+            "lead": fallback["lead"],
+            "speaker_notes": _text(entry.get("speaker_notes"), 3000) or fallback["speaker_notes"],
+            "visual": vis,
+        })
+    return plan, fixes
+
+
+def describe_plan(sections: list[tuple[str, str]], plan: list[dict]) -> list[dict]:
+    """The plan as a caller sees and edits it: the slide_plan format."""
+    return [{"heading": heading, "layout": p.get("layout"), "headline": p.get("headline"),
+             "bullets": p.get("bullets") or [], "visual": p.get("visual")}
+            for (heading, _), p in zip(sections, plan)]
 
 
 # --- Heuristic fallback ----------------------------------------------------

@@ -36,15 +36,19 @@ def _pick_medium(hint: str, role: str) -> str:
 
 
 def make_recipe(sections: list[tuple[str, str]], company: str = "",
-                layouts: tuple | None = None, theme: Theme = DEFAULT_THEME) -> list[SlidePlan]:
+                layouts: tuple | None = None, theme: Theme = DEFAULT_THEME,
+                slide_plan: list[dict] | None = None) -> list[SlidePlan]:
     """Phase 1: produce SlidePlans with proposed placeholders.
 
     `layouts` restricts which layout choices the planner may pick — pass a
     subset when the caller can't back every layout with real data.
+    `slide_plan` is a caller-supplied plan (already run through
+    planner.validate_plan); when given, the planner is skipped.
     """
     from ..planner import plan_deck, LAYOUTS
 
-    planned = plan_deck(sections, company=company, layouts=layouts or LAYOUTS, theme=theme)
+    planned = plan_deck(sections, company=company, layouts=layouts or LAYOUTS, theme=theme,
+                        plan=slide_plan)
     slides: list[SlidePlan] = []
 
     for (heading, body), p in zip(sections, planned):

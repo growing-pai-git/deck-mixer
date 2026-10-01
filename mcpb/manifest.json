@@ -2,7 +2,7 @@
   "manifest_version": "0.4",
   "name": "deck-mixer",
   "display_name": "Deck Mixer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a library of Markdown case studies into branded, editable PowerPoint decks.",
   "long_description": "Builds reference, capabilities, tender and plan decks from your own case library, in your own colours, logo and template. Add at least one API key for the real result: a free Gemini key (aistudio.google.com/apikey) lets an AI art director design your slides and generates their images. Without keys decks still build, but look basic: rule-based layouts and grey image placeholders. Confidential cases are anonymised on every slide and in the speaker notes. Leave the case library empty to try the built-in sample cases.",
   "author": {

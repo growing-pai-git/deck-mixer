@@ -352,6 +352,15 @@ def _is_phase_heading(heading: str) -> bool:
     return any(heading.lower().startswith(k) for k in _PHASE_KEYWORDS)
 
 
+def split_sections(content_md: str) -> list[tuple[str, str]]:
+    """A markdown document's (heading, body) pairs — one per '## ' heading."""
+    parts = re.split(r"^## (.+)$", content_md, flags=re.MULTILINE)
+    return [
+        (parts[i].strip(), parts[i + 1].strip() if i + 1 < len(parts) else "")
+        for i in range(1, len(parts) - 1, 2)
+    ]
+
+
 def build_plan_deck(
     title: str,
     content_md: str,
@@ -362,6 +371,7 @@ def build_plan_deck(
     enrich: bool = True,
     company: str = "",
     theme: Theme = DEFAULT_THEME,
+    slide_plan: list[dict] | None = None,
 ) -> str:
     """Build a plan/proposal deck via the Glaze engine.
 
@@ -370,19 +380,17 @@ def build_plan_deck(
     sources to fill them). With an LLM key configured the Recipe phase uses it;
     otherwise it falls back to layout heuristics. Set enrich=False to stop
     after Proof (no images fetched; image slots become placeholders).
+    `slide_plan` is a caller-supplied plan already run through
+    planner.validate_plan; when given it replaces the planner.
     """
     from .glaze import glaze, DIAGRAM, CHART, KPI
 
     prs = new_presentation(template_path)
 
-    parts = re.split(r"^## (.+)$", content_md, flags=re.MULTILINE)
-    sections = [
-        (parts[i].strip(), parts[i + 1].strip() if i + 1 < len(parts) else "")
-        for i in range(1, len(parts) - 1, 2)
-    ]
+    sections = split_sections(content_md)
 
     # Glaze: Plan (demand + describe) -> Fetch (get images) -> Place.
-    slides = glaze(sections, company=company, fill=enrich, theme=theme)
+    slides = glaze(sections, company=company, fill=enrich, theme=theme, slide_plan=slide_plan)
 
     # Cover — give the title slide a dedicated hero image (the cover always
     # warrants one). Falls back to the geometric cover when none comes back.

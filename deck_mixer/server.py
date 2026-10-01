@@ -173,6 +173,9 @@ generates on-brand imagery to match. Four deck types:
   • create_plan_deck         free-form deck from your own title + markdown
 
 Typical flow: list_cases (find the 2-5 relevant ones) -> create_*_deck.
+For create_plan_deck YOU design the slides: pass slide_plan (see that tool's
+description), so plan decks need no planner key. Images and tender-deck
+planning still need the user's keys.
 
 SETUP — STRONGLY RECOMMENDED. Decks still build with zero keys, but they look
 basic: simple rule-based layouts and grey image placeholders. The AI "art
@@ -532,7 +535,58 @@ def create_tender_deck(
 # Tool: create_plan_deck
 # ---------------------------------------------------------------------------
 
-@mcp.tool()
+_PLAN_DECK_DOC = """
+    Generate a PPTX deck from any markdown document — plans, proposals, briefings.
+
+    Each H2 heading (## ...) becomes one slide. Headings that start with
+    "Fase", "Phase", "Stap", or "Etappe" also get a section-divider slide
+    before their content slide (automatic — not a layout to plan).
+
+    WHO DESIGNS THE SLIDES, in order:
+      1. slide_plan given: your plan is used (you are the art director — no
+         planner key needed).
+      2. Else, with GEMINI_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY set: the
+         internal AI planner.
+      3. Else: simple built-in layout rules (basic-looking).
+    So when you call this tool as an LLM, build slide_plan yourself: one entry
+    per H2 heading, following these design rules —
+
+    {rules}
+
+    slide_plan format (a list, one object per H2 heading):
+      heading   the H2 text exactly (the join key to content_md)
+      layout    one of: {layouts}
+      headline  the line on the slide, <= 9 words (default: the heading)
+      bullets   3-5 crisp bullets (omit for statement/quote)
+      visual    {{"want": bool, "medium": "generate"|"photo", "brief": "<one
+                vivid sentence describing the image>"}} — image slides only
+    Anything missing or invalid falls back to the built-in rules for that slide
+    only, and the result lists each fix so you can correct and resend.
+
+    plan_only=true builds nothing: it returns the plan that would be used (yours
+    after checking, or the planner's) as JSON in the slide_plan format. Use it to
+    show the user the slide-by-slide structure and adjust it with them first.
+
+    Images need an image key (a free GEMINI_API_KEY covers it); without one,
+    image slots become marked placeholders and the result says so.
+
+    Args:
+        title:      Cover slide main title. Use \\n for line breaks.
+        content_md: Full markdown content. H2 headings drive the slide structure.
+        subtitle:   Cover subtitle (client name, date, etc.).
+        label:      Small label above the title (e.g. "Plan of Approach").
+        company:    Client/company name — context for tone and imagery.
+        enrich:     Set to false to skip fetching images (slots stay placeholders).
+        filename:   Optional output filename without extension.
+        slide_plan: Your slide-by-slide design (see above).
+        plan_only:  Return the plan as JSON instead of building the deck.
+
+    Returns:
+        Path to the generated .pptx file (plus any plan fixes and key notices),
+        or the plan as JSON when plan_only is true.
+    """
+
+
 def create_plan_deck(
     title: str,
     content_md: str,
@@ -541,46 +595,36 @@ def create_plan_deck(
     company: str = "",
     enrich: bool = True,
     filename: str | None = None,
+    slide_plan: list[dict] | None = None,
+    plan_only: bool = False,
 ) -> str:
-    """
-    Generate a PPTX deck from any markdown document — plans, proposals, briefings.
+    from .builder import split_sections
+    from .planner import describe_plan, plan_deck, validate_plan
 
-    Each H2 heading (## ...) becomes one slide. Headings that start with
-    "Fase", "Phase", "Stap", or "Etappe" get a full-bleed section-divider
-    slide (in the theme's primary colour) followed by a content slide.
+    sections = split_sections(content_md)
+    fixes: list[str] = []
+    validated = None
+    if slide_plan is not None:
+        validated, fixes = validate_plan(sections, slide_plan, theme=THEME)
 
-    Planning (when GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY is set):
-      A 'planner' step reads the storyline and assigns each slide a layout and
-      visual treatment — statement, clean bullets, photo-split, quote, or
-      diagram — so the deck has a varied rhythm instead of identical slides.
-      Without a key it falls back to sensible layout heuristics.
+    if plan_only:
+        planned = validated if validated is not None else plan_deck(sections, company=company, theme=THEME)
+        return json.dumps({
+            "note": "Nothing was built. Edit 'slides' if needed, then call create_plan_deck "
+                    "again with slide_plan set to it.",
+            "slides": describe_plan(sections, planned),
+            "fixes": fixes,
+        }, indent=2, ensure_ascii=False)
 
-    Imagery (when an image-provider or stock-photo key is set):
-      Each content slide gets a relevant on-brand image (AI-generated or
-      stock photo, see configure_keys for the full provider list).
-
-    Both enhancements are progressive — the deck still generates without any
-    API keys. If none are configured, the result now leads with an explicit
-    warning instead of silently degrading.
-
-    Args:
-        title:      Cover slide main title. Use \\n for line breaks.
-        content_md: Full markdown content. H2 headings drive the slide structure.
-        subtitle:   Cover subtitle (client name, date, etc.).
-        label:      Small label above the title (e.g. "Plan of Approach").
-        company:    Client/company name — gives Claude context for tone.
-        enrich:     Set to false to skip Claude enrichment even if key is present.
-        filename:   Optional output filename without extension.
-
-    Returns:
-        Path to the generated .pptx file.
-    """
     if (msg := _first_run_guard()):
         return msg
     if (err := _filename_error(filename)):
         return err
 
-    warning = _missing_key_warning()
+    warning = _missing_key_warning(text=validated is None, images=enrich)
+    if validated is None and warning and "Text:" in warning:
+        warning += ("Claude: you can design the slides yourself — pass slide_plan (see this "
+                    "tool's description); no planner key needed.\n\n")
     out = _outfile("plan", filename)
     path = build_plan_deck(
         title=title,
@@ -592,8 +636,19 @@ def create_plan_deck(
         output_path=out,
         template_path=TEMPLATE_PATH,
         theme=THEME,
+        slide_plan=validated,
     )
-    return f"{warning}Created plan deck: {path}"
+    adjusted = ("\n\nPlan adjustments:\n" + "\n".join(f"  - {f}" for f in fixes)) if fixes else ""
+    return f"{warning}Created plan deck: {path}{adjusted}"
+
+
+def _plan_deck_doc() -> str:
+    from .planner import DESIGN_RULES, PLAN_LAYOUTS
+    return _PLAN_DECK_DOC.format(rules=DESIGN_RULES, layouts=", ".join(PLAN_LAYOUTS))
+
+
+create_plan_deck.__doc__ = _plan_deck_doc()
+create_plan_deck = mcp.tool()(create_plan_deck)
 
 
 def _missing_key_warning(text: bool = True, images: bool = True) -> str:

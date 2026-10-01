@@ -90,6 +90,20 @@ How to add them, by how you run Deck Mixer:
 - **Skill in a claude.ai chat:** the sandbox forgets keys when the chat ends —
   prefer the extension or Claude Code for AI-designed decks.
 
+**Inside Claude, plan decks don't need a text key:** Claude designs the
+slides itself and hands Deck Mixer a slide plan (`create_plan_deck`'s
+`slide_plan` in the MCP server and extension; `build plan --plan` in the
+skill). From the CLI you can do the same by hand:
+
+```bash
+pandoro deck-mixer build plan --title "Q1 Plan" --content my-plan.md --plan-only > plan.json
+# edit the "slides" list (layouts, headlines, image briefs), save it as slides.json
+pandoro deck-mixer build plan --title "Q1 Plan" --content my-plan.md --plan slides.json
+```
+
+Images, and the AI planning of tender decks, still use your keys — a free
+Gemini key covers both.
+
 Every reference, tender and plan build prints a warning when a key it would
 use is missing. With a key, the text of the cases in that deck is sent to that
 provider; confidential client names are replaced with "the client" first.
