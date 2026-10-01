@@ -347,8 +347,9 @@ the exact slug from that output.
 configured; see [Step 6](#step-6--add-your-api-keys-strongly-recommended).
 It's not a bug.
 
-**Still stuck?** Open an issue on the GitHub repo with the exact command you
-ran and the error message.
+**Still stuck?** Deck Mixer is shared as-is, without support — Growing pAI
+publishes tools it uses itself to show how it works. Want to explore what AI
+can do for your team? Get in touch: [growingpai.com](https://growingpai.com).
 
 ## Where to go next
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pandoro"
-version = "0.2.0"
+version = "0.2.1"
 description = "Turn a case-study library into branded, editable PPTX decks."
 readme = "README.md"
 license = { text = "MIT" }

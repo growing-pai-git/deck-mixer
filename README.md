@@ -6,8 +6,13 @@ plans. Add a free Gemini API key and an AI "art director" designs your slides
 and generates its images; without keys it still runs, but the decks look
 basic ([how to add keys](deck_mixer/README.md#api-keys--strongly-recommended)).
 
-Made by [Growing pAI](https://growingpai.com). Installs as the `pandoro`
-command: every Deck Mixer command is `pandoro deck-mixer ...`.
+Made by [Growing pAI](https://growingpai.com), who share tools they use
+themselves to show how they work. Deck Mixer is shared as-is, without
+support. Want to explore what AI can do for your team?
+[Get in touch](https://growingpai.com).
+
+Installs as the `pandoro` command: every Deck Mixer command is
+`pandoro deck-mixer ...`.
 
 ```bash
 pip install -e .          # from a checkout, for now
