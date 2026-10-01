@@ -240,7 +240,7 @@ A Claude or OpenAI text key also works; pair a Claude key with an image key.
 
 1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
    and sign in with any Google account.
-2. Click **Create API key** and copy it (it starts with `AIza`).
+2. Click **Create API key** and copy it.
 
 Other keys: [Anthropic](https://console.anthropic.com/settings/keys) ·
 [OpenAI](https://platform.openai.com/api-keys) ·
@@ -252,7 +252,7 @@ Other keys: [Anthropic](https://console.anthropic.com/settings/keys) ·
 - **In the terminal** (this guide): save it once, and every deck after that
   uses it:
   ```bash
-  pandoro deck-mixer configure --gemini-api-key AIza...your-key
+  pandoro deck-mixer configure --gemini-api-key YOUR-KEY
   ```
   Other keys work the same way: `--anthropic-api-key`, `--openai-api-key`,
   `--pexels-api-key`, `--unsplash-access-key`. They're stored in

@@ -80,7 +80,7 @@ slides). One free [Gemini key](https://aistudio.google.com/apikey) covers both.
 
 How to add them, by how you run Deck Mixer:
 
-- **CLI:** `pandoro deck-mixer configure --gemini-api-key AIza...` saves it
+- **CLI:** `pandoro deck-mixer configure --gemini-api-key YOUR-KEY` saves it
   to `~/.config/pandoro/keys.json` (owner-only). Environment variables with
   the names above work too and take priority.
 - **Claude Desktop extension:** Settings → Extensions → Deck Mixer; keys are

@@ -104,7 +104,7 @@ def load_dotenv(search_paths: list[Path] | None = None) -> None:
     (without overwriting existing vars). Looks in KB_PATH and the repo root.
 
     Lets users keep secrets in a local `.env` file, e.g.:
-        GEMINI_API_KEY=AIza...
+        GEMINI_API_KEY=your-key
         IMAGE_PROVIDER=gemini_flash
     """
     if search_paths is None:
